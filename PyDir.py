@@ -2,7 +2,7 @@ import requests
 import sys
 import subprocess
 import os
-import requests
+
 def execute(flags):
 	if '-s' in flags:
 		direc = input("Enter the location of the wordlist, including the name of the file.\nPress enter to use default wordlist\n")
