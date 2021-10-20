@@ -1,9 +1,25 @@
 import requests
 import sys
-import subprocess
 import os
+import time
+import multiprocessing
+
+def divide(con,n):
+	n = n/2
+	n = int(n)
+	newCon = []
+	d = con[n]
+	for i in con:
+
+		if i == d:
+			break
+		else:
+			newCon.append(i)
+			con.remove(i)
+	return con,newCon
 
 def execute(flags):
+	
 	if '-s' in flags:
 		direc = input("Enter the location of the wordlist, including the name of the file.\nPress enter to use default wordlist\n")
 		direc.strip()
@@ -19,31 +35,74 @@ def execute(flags):
 				exit()
 
 		os.system("cls")
-		con = direc.readlines()
+		con = []
+		for i in direc.readlines():
+			con.append(i.rstrip('\n'))
+		n = len(con)
+
 		url = input("Enter the url\n")
 		response = requests.get(url)
 		t_url = url
-		running = False
 		
-		if response.status_code == 200:
+		a = divide(con,n)
+		a1 = divide(a[0],len(a[0]))
+		a2 = divide(a[1],len(a[1]))
+		p1 = multiprocessing.Process(target = run, args = (a1[0],t_url,flags,response))
+		p2 = multiprocessing.Process(target = run, args = (a1[1],t_url,flags,response))
+		p3 = multiprocessing.Process(target = run, args = (a2[0],t_url,flags,response))
+		p4 = multiprocessing.Process(target = run, args = (a2[1],t_url,flags,response))
+		start = time.perf_counter()
+		p1.start()
+		p2.start()
+		p3.start()
+		p4.start()
+		
+		p1.join()
+		p2.join()
+		p3.join()
+		p4.join()
+		finish = time.perf_counter()
+		
+		print(f'Finished in {round(finish-start,2)} second(s)')
+
+
+
+def run(con,t_url,flags,response):
+	if response.status_code == 200:
+		if '-i' in flags:
+				print("ICMP flooding")
+				n = input("Enter the number of pings requests you would want to use\nNote that some firewalls block ICMP requests. Try SYN flood")
+				
+		if '-s' in flags:
 			for i in con:
 				i.rstrip('\n')
 				url = t_url+"/"+i
 				res = requests.get(url)
-				print(f"URL:{url} RESPONSE CODE:{res.status_code}")
-					
 
-		else:
-			running = False
-			print("Website is down. Please check url.")
-			exit()
 
+				if '-q' in flags:
+					if res.status_code == 200:
+						print(f"URL:{url} RESPONSE CODE:{res.status_code}")
+				else:
+					print(f"URL:{url} RESPONSE CODE:{res.status_code}")
+
+	else:
+		print("Website is down. Please check url.")
+		exit()
+
+def icmpflood(ip):
+	print("ICMP flooding!!!")
+	os.system("hping3 --flood ",ip);
+
+def synflood(url):
+	pass
 
 if __name__ == "__main__":
 	Uargs = sys.argv
 	Uargs.pop(0)
-	Sargs = ['-s','-i','-h','-k']
+	Sargs = ['-s','-i','-h','-k','-q']
 	flags = []
+
 	for i in Uargs:
 		if i not in Sargs:
 			print(f'Flag {i} is invalid. Try again')
