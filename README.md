@@ -2,6 +2,14 @@ PyDir is a program written in python that can be used to bruteforce websites to 
 
 Here all the things I would like to add to this particular project.
 
+How to use:-
+
+python PyDir.py -s
+
+Enter the url, and scan away! 
+
+use flag -q to print out only successful requests
+
 To Do:-
 1. Concurrency
 2. Multithreading
